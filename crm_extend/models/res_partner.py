@@ -1,65 +1,80 @@
-from datetime import datetime
-
-from odoo import fields, models, api, _
-from odoo.exceptions import ValidationError, UserError
+# -*- coding: utf-8 -*-
+import re
+import logging
+import datetime
+from dateutil.relativedelta import relativedelta
+from odoo import models, fields, api, _
+from odoo.api import NewId
 from odoo.exceptions import UserError
+
+
+_logger = logging.getLogger(__name__)
 
 GENDER = [
     ('male', '男'),
     ('female', '女')
-    ]
-    
+]
 
 
 class ResPartner(models.Model):
-    _name = 'res.partner'
-    _inherit = 'res.partner'
+    _inherit = "res.partner"
 
-    id_card = fields.Char(string='身份证')
-    age = fields.Integer(string='年龄', compute='_compute_age')
-    gender = fields.Selection(selection=GENDER, string='性别', compute='_compute_gender')
+    identity_id = fields.Char(string='身份证号')
+    age = fields.Integer(string='年龄', compute='_compute_information')
+    gender = fields.Selection(selection=GENDER, string='性别', compute='_compute_information')
+    title = fields.Many2one(comodel_name='res.partner.title', compute='_compute_information')
 
-
-    @api.depends('id_card')
-    def _compute_age(self):
+    @api.depends('identity_id')
+    def _compute_information(self):
         for record in self:
-            id_card = record.id_card
-            if id_card and len(id_card) == 18:
-                try:
-                    birth_date_str = id_card[6:14]
-                    birth_date = datetime.strptime(birth_date_str, '%Y%m%d')
-                except ValueError as e:
-                    raise UserError(_('%s身份证号格式错误, 详细信息:%s' % (record.name, e)))
-                today = datetime.today()
-                age = today.year - birth_date.year - ((today.month, today.day)< (birth_date.month, birth_date.day))
-                record.age = age
+            if identity_number := record.identity_id:
+                record.gender = record._compute_gender(identity_number)
+                record.age = record._compute_age(identity_number)
+                record.title = record._compute_title(record.gender)
             else:
-                record.age = 0
-    
-    @api.depends('id_card')
-    def _compute_gender(self):
-        for record in self:
-            id_card = record.id_card
-            if id_card and len(id_card) == 18:
-                gender_factor = int(record.id_card[-2]) % 2
-                if gender_factor == 1:
-                    record.gender = 'male'
-                else:
-                    record.gender = 'female'
-            else:
-                record.gender = ''
-            
+                record.gender, record.age, record.title = None, 0, None
 
-    @api.onchange('id_card')
-    def _onchange_id_card_format(self):
-        import re
-        pattern = r'^[1-9][0-9]{16}[0-9Xx]'
+    def _compute_age(self, identity_number) -> int:
         try:
-            id_res = re.search(pattern, self.id_card)
-            if id_res:
-                self.id_card = id_res.string
-            else:
-                raise UserError(_('%s的身份证号格式不正确, %s, %s') % (self.name, id_res, self.id_card))
+            birth_date = datetime.datetime.strptime(identity_number[6:14], "%Y%m%d")
+            today = datetime.date.today()
+            age = relativedelta(today, birth_date).years
+            return age
         except Exception as e:
-            pass
-            
+            _logger.error(e)
+
+    def _compute_gender(self, identity_number) -> str:
+        if int(identity_number[-2]) % 2:
+            return 'male'
+        return 'female'
+
+    def _compute_title(self, gender) -> [NewId | int]:
+        match gender:
+            case 'male':
+                title = self.env['res.partner.title'].with_context({'lang': 'en_US'}).search([('name', '=', 'Mister')], limit=1)
+                return title.id
+            case 'female':
+                title = self.env['res.partner.title'].with_context({'lang': 'en_US'}).search([('name', '=', 'Miss')], limit=1)
+                return title.id
+            case _:
+                return None
+
+    @api.constrains('identity_id')
+    def _check_information(self):
+        for record in self:
+            identity_number = record.identity_id
+            pattern = r'^[1-9][0-9]{16}[0-9Xx]'
+            try:
+                if re.search(pattern, identity_number):
+                    pass
+            except Exception as e:
+                _logger.error(e)
+
+    def action_batch_import_customer(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("批量导入"),
+            'res_model': 'customer.import.wizard',
+            'target': 'new',
+            'views': [(self.env.ref('crm_extend.customer_import_wizard_form').id, 'form')],
+        }
