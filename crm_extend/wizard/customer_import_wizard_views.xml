@@ -7,7 +7,7 @@
             <field name="arch" type="xml">
                 <form>
                     <group>
-                        <field name="directory_path" string="文件夹路径"/>
+                        <field name="directory_path" string="文件夹路径" placeholder="E:\DeskTop\港中旅"/>
                     </group>
                     <footer>
                         <button name="import_customer_data" string="导入数据" type="object" class="oe_highlight"/>
