@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_project_project_form_inherit" model="ir.ui.view">
+        <field name="name">Project Form Inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <button name="action_open_share_project_wizard" position="after">
+                <button name="button_validation_apply" class="btn btn-primary" type="object" string="Apply Validation" invisible="state != 'draft'"/>
+                <button name="button_approved" class="btn btn-primary" type="object" string="Validation Approve" invisible="state != 'pending'"/>
+                <button name="button_rejected" class="btn btn-primary" type="object" string="Validation Reject" invisible="state != 'pending'"/>
+                <button name="button_reset_draft" class="btn btn-primary" type="object" string="Reset to Draft" invisible="state != 'rejected' and state != 'approved'"/>
+                <field name="state" widget="statusbar" statusbar_visible="draft,pending,approved,rejected" readonly="1"/>
+            </button>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_project_project_form_inherit_tier" model="ir.ui.view">
+        <field name="name">Project Tier Validation Form</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project_extend.view_project_project_form_inherit"/>
+        <field name="arch" type="xml">
+            <button name="button_validation_apply" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </button>
+            <field name="state" position="after">
+                <field name="validation_status" invisible="1"/>
+            </field>
+            <button name="button_approved" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </button>
+        </field>
+    </record>
+
+    <record id="view_project_project_filter" model="ir.ui.view">
+        <field name="name">Project Search Tier Validation</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_project_filter"/>
+        <field name="arch" type="xml">
+            <search position="inside">
+                <group expand="0" string="Need Actions">
+                    <filter
+                            name="needs_review"
+                            string="Needs my Review"
+                            domain="[('reviewer_ids', 'in', uid), ('state', 'not in', ['approved', 'cancel'])]"
+                            help="My Project to review"
+                    />
+                    <filter
+                        name="tier_validated"
+                        string="Validated"
+                        domain="[('validated', '=', True)]"
+                    />
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>
