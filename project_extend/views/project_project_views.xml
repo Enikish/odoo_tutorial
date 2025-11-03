@@ -11,6 +11,7 @@
                 <button name="button_rejected" class="btn btn-primary" type="object" string="Validation Reject" invisible="state != 'pending'"/>
                 <button name="button_reset_draft" class="btn btn-primary" type="object" string="Reset to Draft" invisible="state != 'rejected' and state != 'approved'"/>
                 <field name="state" widget="statusbar" statusbar_visible="draft,pending,approved,rejected" readonly="1"/>
+                <button name="action_subscribe" class="btn btn-primary" type="object" string="Subscribe"/>
             </button>
         </field>
     </record>

@@ -24,6 +24,7 @@ Long description of module's purpose
     'data': [
         # 'security/ir.model.access.csv',
         'views/project_project_views.xml',
+        'data/mail_data.xml',
     ],
     # only loaded in demonstration mode
 }
