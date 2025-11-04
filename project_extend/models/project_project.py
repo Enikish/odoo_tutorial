@@ -126,4 +126,12 @@ class ProjectProject(models.Model):
             fields.Datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         )
 
+    def check_attachment_writable(self) -> bool:
+        return self.state not in ('pending', 'approved', 'rejected')
 
+
+class ProjectTask(models.Model):
+    _inherit = "project.task"
+
+    def check_status(self):
+        return
