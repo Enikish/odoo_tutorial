@@ -23,6 +23,6 @@
         'views/templates.xml',
         'data/data.xml',
     ],
-    'license': 'LGPL-3.0'
+    'license': 'LGPL-3'
 }
 
