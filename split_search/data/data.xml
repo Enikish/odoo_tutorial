@@ -1,0 +1,8 @@
+<odoo>
+    <data>
+        <record id="split_search_param" model="ir.config_parameter">
+            <field name="key">split_search.split_sign</field>
+            <field name="value">;</field>
+        </record>
+    </data>
+</odoo>
